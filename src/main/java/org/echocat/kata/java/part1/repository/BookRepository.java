@@ -28,11 +28,6 @@ public class BookRepository {
     return findAll().stream().filter(book -> book.getIsbn().equals(isbn)).findFirst();
   }
 
-  public Set<Book> findAllSortedByTitle() throws FileNotFoundException, URISyntaxException {
-    return findAll().stream().sorted(Comparator.comparing(Book::getTitle)).collect(
-        Collectors.toCollection(LinkedHashSet::new));
-  }
-
   public Set<Book> findAll() throws FileNotFoundException, URISyntaxException {
 
     if (!cachedBooks.isEmpty()) {

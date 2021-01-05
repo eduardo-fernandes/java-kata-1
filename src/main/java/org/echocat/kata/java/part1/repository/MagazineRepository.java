@@ -23,11 +23,6 @@ public class MagazineRepository {
 
   private final Set<Magazine> cachedMagazines = new HashSet<>();
 
-  public Set<Magazine> findAllSortedByTitle() throws FileNotFoundException, URISyntaxException {
-    return findAll().stream().sorted(Comparator.comparing(Magazine::getTitle)).collect(
-        Collectors.toCollection(LinkedHashSet::new));
-  }
-
   public Optional<Magazine> findByIsbn(String isbn) throws FileNotFoundException, URISyntaxException {
     return findAll().stream().filter(magazine -> magazine.getIsbn().equals(isbn)).findFirst();
   }
