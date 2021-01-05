@@ -1,15 +1,19 @@
 package org.echocat.kata.java.part1.repository;
 
-import static org.echocat.kata.java.part1.config.Config.COMMA_DELIMITER;
+import static org.echocat.kata.java.part1.config.Config.CSV_DELIMITER;
 
 import org.echocat.kata.java.part1.model.Author;
 import org.echocat.kata.java.part1.model.Magazine;
 
 import java.io.FileNotFoundException;
 import java.net.URISyntaxException;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Optional;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class MagazineRepository {
 
@@ -17,9 +21,22 @@ public class MagazineRepository {
 
   private final FileUtils fileUtils = new FileUtils();
 
+  private final Set<Magazine> cachedMagazines = new HashSet<>();
+
+  public Set<Magazine> findAllSortedByTitle() throws FileNotFoundException, URISyntaxException {
+    return findAll().stream().sorted(Comparator.comparing(Magazine::getTitle)).collect(
+        Collectors.toCollection(LinkedHashSet::new));
+  }
+
+  public Optional<Magazine> findByIsbn(String isbn) throws FileNotFoundException, URISyntaxException {
+    return findAll().stream().filter(magazine -> magazine.getIsbn().equals(isbn)).findFirst();
+  }
+
   public Set<Magazine> findAll() throws FileNotFoundException, URISyntaxException {
 
-    Set<Magazine> magazines = new HashSet<>();
+    if (!cachedMagazines.isEmpty()) {
+      return cachedMagazines;
+    }
 
     try (Scanner scanner = new Scanner(fileUtils.getFile("org/echocat/kata/java/part1/data/magazines.csv"));) {
 
@@ -29,11 +46,11 @@ public class MagazineRepository {
       }
 
       while (scanner.hasNextLine()) {
-        magazines.add(parseMagazine(scanner.nextLine()));
+        cachedMagazines.add(parseMagazine(scanner.nextLine()));
       }
     }
 
-    return magazines;
+    return cachedMagazines;
   }
 
   private Set<Author> parseAuthors(String emailsString) throws FileNotFoundException, URISyntaxException {
@@ -52,7 +69,7 @@ public class MagazineRepository {
     Magazine magazine;
 
     try (Scanner rowScanner = new Scanner(magazineString)) {
-      rowScanner.useDelimiter(COMMA_DELIMITER);
+      rowScanner.useDelimiter(CSV_DELIMITER);
       magazine = new Magazine(
           rowScanner.next(),
           rowScanner.next(),
